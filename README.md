@@ -1,2 +1,2 @@
-# phyres
-Physical reasoning in artificial agents
+# Physical reasoning in artificial agents
+
