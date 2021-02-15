@@ -17543,18 +17543,53 @@ a.anchor-link {
 <li>-1  - Did not solve the task</li>
 </ul>
 </li>
-<li>To encourage sample efficiency a new metric of success called AUCCESS is adopted.</li>
+<li>After the simulation other than reward you can request intermediate frames of simulation also.</li>
+<li>Efficiency of the agent is measured by number of actions that are attempted to solve the task during testing phase. Fewer attempts correspond to greater efficiency. A new metric AUCCESS is coined for emphasis on fewer attempts. AUCCESS is defined as follows</li>
 </ol>
+<p>$ AUCCESS =  \frac {\sum_k w_k . s_k} {\sum_k w_k}$</p>
+<p>$ w_k = log(k + 1) - log(k)  \quad k \in \{1,...100\}$</p>
+<p>$ s_k $ is success percentage at k attempts</p>
+<p>In Code</p>
+<p><a href="https://github.com/facebookresearch/phyre/blob/2c5247944cfbf9730159da9181d1d6a937362dce/src/python/phyre/metrics.py#L329">https://github.com/facebookresearch/phyre/blob/2c5247944cfbf9730159da9181d1d6a937362dce/src/python/phyre/metrics.py#L329</a></p>
 <h3 id="Experiments-in-the-paper">Experiments in the paper<a class="anchor-link" href="#Experiments-in-the-paper">&#182;</a></h3><p>The following agents were developed in paper to establish baselines</p>
 <ol>
 <li>RAND - Random agent which uniformly samples valid actions</li>
 <li>MEM - Remembers which random action worked during training and uses them during inference</li>
+<li>MEM-O - Continues to train during testing phase also</li>
+<li>DQN - Deep Q-Network which trained by minimizing the cross-entropy between the soft prediction and the observed reward. There are so many finer details here.</li>
+<li>DQN-O - Similar to DQN but continues to learn during testing phase too.</li>
+</ol>
+<p><img src="./media/paper_stoa_res.png" alt="Results">
+<br></p>
+<h4 id="Related-Work">Related Work<a class="anchor-link" href="#Related-Work">&#182;</a></h4><ol>
+<li>Forward Prediction for Physical Reasoning - <a href="https://arxiv.org/abs/2006.10734">https://arxiv.org/abs/2006.10734</a></li>
+<li>Causal World Models by Unsupervised Deconfounding of Physical Dynamics - <a href="https://arxiv.org/pdf/2012.14228.pdf">https://arxiv.org/pdf/2012.14228.pdf</a></li>
 </ol>
 
 </div>
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="Problem-Summary">Problem Summary<a class="anchor-link" href="#Problem-Summary">&#182;</a></h1><p>Given the initial scene find coordinate $(x_i, y_i)$ to place a ball of radius r in the environment such that by the end of the simulation we reach the goal state. Goal state is defined as the state where dynamic goal subject(2 or blue subject) touches static goal object (4) or dynamic goal object(3). Both 4 and 3 are green objects.</p>
+<h3 id="Challenges-in-this-problem">Challenges in this problem<a class="anchor-link" href="#Challenges-in-this-problem">&#182;</a></h3><ol>
+<li><p>Assuming we have a perfect forward prediction model, it only helps in validating if a hypothesis $(x_i, y_i, r)$. It is doesn't help with coming up with $(x_i, y_i, r)$, so we are left with a large search space. Humans tackle this problem by reasoning with a qualitative physics model, so the challenge is not learning the physics of the environment but reasoning with this information</p>
+</li>
+<li><p>Sparse rewards - Only a handful of actions lead to a reward and they are concentrated around the objects of interest. All the three variables x, y, r are strongly correlated to each other. Many of the actions are invalid too. For example any action which touches borders of scene or any object in the scene are invalid.</p>
+</li>
+</ol>
+<p><img src="./media/task_act.png" alt="Actions"></p>
+<ol>
+<li>Uninformative or Vague rewards - Rewards we get back are binary and doesn't give information on how far it is from the goal state. So we need a way to encode the goal into a low-dimensional vector space which allows us to<ol>
+<li>Provide feedback on how far agent is from the goal qualitatively.</li>
+<li>Provides a way to backtrack the actions to adjust the initial action</li>
+</ol>
+</li>
+</ol>
+<h3 id="Summary">Summary<a class="anchor-link" href="#Summary">&#182;</a></h3><p>So this problem can be cast as a search problem. I think we need the following</p>
+<ol>
+<li>A framework to encode goal which gives more informative feedback at the end of simulation. </li>
+<li>An efficient way to backtrack from the intermediate frames provided.</li>
+</ol>
 
 </div>
 </div>
